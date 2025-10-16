@@ -25,7 +25,7 @@ public class MatchService {
     }
 
     public List<Match> getByCompetition(String idCompetition) {
-        return repo.findByCompetitionId(idCompetition);
+        return repo.findByIdCompetition(idCompetition);
     }
 
     public Match add(Match m) {

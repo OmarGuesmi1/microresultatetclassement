@@ -27,7 +27,7 @@ public class ClassementService {
 
     // Mettre à jour les classements d'une compétition
     public List<Classement> updateClassements(String idCompetition) {
-        List<Resultat> resultats = resultatRepo.findByCompetitionId(idCompetition);
+        List<Resultat> resultats = resultatRepo.findByIdCompetition(idCompetition);
         Map<String, Classement> classements = new HashMap<>();
 
         for (Resultat r : resultats) {
@@ -71,7 +71,7 @@ public class ClassementService {
         });
 
         // Supprimer les anciens classements et sauvegarder les nouveaux
-        classementRepo.deleteAll(classementRepo.findByCompetitionId(idCompetition));
+        classementRepo.deleteAll(classementRepo.findByIdCompetition(idCompetition));
         classementRepo.saveAll(classements.values());
 
         // Retourner la liste triée
@@ -84,7 +84,7 @@ public class ClassementService {
 
     // Récupérer les classements triés pour une compétition
     public List<Classement> getClassements(String idCompetition) {
-        return classementRepo.findByCompetitionId(idCompetition).stream()
+        return classementRepo.findByIdCompetition(idCompetition).stream()
                 .sorted(Comparator
                         .comparingInt(Classement::getPoints).reversed()
                         .thenComparingInt(Classement::getDifferenceButs).reversed()
