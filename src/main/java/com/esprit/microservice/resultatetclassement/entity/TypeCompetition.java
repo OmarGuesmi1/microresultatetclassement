@@ -1,4 +1,4 @@
-package com.esprit.microservice.resultatetclassement;
+package com.esprit.microservice.resultatetclassement.entity;
 
 public enum TypeCompetition {
     LIGUE,
