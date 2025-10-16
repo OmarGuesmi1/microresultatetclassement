@@ -1,4 +1,4 @@
-package com.esprit.microservice.resultatetclassement;
+package com.esprit.microservice.resultatetclassement.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
