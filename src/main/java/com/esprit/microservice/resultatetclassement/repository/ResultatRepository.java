@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ResultatRepository extends MongoRepository<Resultat, String> {
 
-    List<Resultat> findByCompetitionId(String idCompetition);
+    List<Resultat> findByIdCompetition(String idCompetition);
 }
+
