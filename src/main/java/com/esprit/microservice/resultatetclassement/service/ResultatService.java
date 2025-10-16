@@ -20,7 +20,7 @@ public class ResultatService {
     }
 
     public List<Resultat> getByCompetition(String idCompetition) {
-        return repo.findByCompetitionId(idCompetition);
+        return repo.findByIdCompetition(idCompetition);
     }
 
     public Resultat add(Resultat r) {
