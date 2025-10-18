@@ -20,8 +20,8 @@ public class Match {
 
     private StatutMatch statut; // PROGRAMMÉ, TERMINÉ, ANNULÉ
 
-    private String stade;      // 🏟️ Nom du stade où se joue le match
-    private boolean domicile;  // 🏠 true = match à domicile, false = extérieur
+    private String stade;
+    private boolean domicile;
 
     // 🧱 Constructeurs
     public Match() {
