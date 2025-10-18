@@ -2,7 +2,6 @@ package com.esprit.microservice.resultatetclassement.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.LocalDate;
 
 @Document(collection = "matches")
@@ -19,14 +18,18 @@ public class Match {
     private int butsExterieur;
     private LocalDate dateMatch;
 
-    private StatutMatch statut; // Enum : PROGRAMMÉ, TERMINÉ, ANNULÉ
+    private StatutMatch statut; // PROGRAMMÉ, TERMINÉ, ANNULÉ
+
+    private String stade;      // 🏟️ Nom du stade où se joue le match
+    private boolean domicile;  // 🏠 true = match à domicile, false = extérieur
 
     // 🧱 Constructeurs
     public Match() {
     }
 
     public Match(String id, String idCompetition, String idClubDomicile, String idClubExterieur,
-                 int butsDomicile, int butsExterieur, LocalDate dateMatch, StatutMatch statut) {
+                 int butsDomicile, int butsExterieur, LocalDate dateMatch,
+                 StatutMatch statut, String stade, boolean domicile) {
         this.id = id;
         this.idCompetition = idCompetition;
         this.idClubDomicile = idClubDomicile;
@@ -35,9 +38,11 @@ public class Match {
         this.butsExterieur = butsExterieur;
         this.dateMatch = dateMatch;
         this.statut = statut;
+        this.stade = stade;
+        this.domicile = domicile;
     }
 
-    // 🧩 Getters et Setters
+    // 🧩 Getters & Setters
     public String getId() {
         return id;
     }
@@ -100,5 +105,21 @@ public class Match {
 
     public void setStatut(StatutMatch statut) {
         this.statut = statut;
+    }
+
+    public String getStade() {
+        return stade;
+    }
+
+    public void setStade(String stade) {
+        this.stade = stade;
+    }
+
+    public boolean isDomicile() {
+        return domicile;
+    }
+
+    public void setDomicile(boolean domicile) {
+        this.domicile = domicile;
     }
 }
