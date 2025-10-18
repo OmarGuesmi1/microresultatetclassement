@@ -9,17 +9,21 @@ public class Club {
     @Id
     private String id;
     private String nom;
+    private String ville;
     private String pays;
+    private String stade;
     private String urlLogo;
 
     // 🧱 Constructeurs
     public Club() {
     }
 
-    public Club(String id, String nom, String pays, String urlLogo) {
+    public Club(String id, String nom, String ville, String pays, String stade, String urlLogo) {
         this.id = id;
         this.nom = nom;
+        this.ville = ville;
         this.pays = pays;
+        this.stade = stade;
         this.urlLogo = urlLogo;
     }
 
@@ -40,12 +44,28 @@ public class Club {
         this.nom = nom;
     }
 
+    public String getVille() {
+        return ville;
+    }
+
+    public void setVille(String ville) {
+        this.ville = ville;
+    }
+
     public String getPays() {
         return pays;
     }
 
     public void setPays(String pays) {
         this.pays = pays;
+    }
+
+    public String getStade() {
+        return stade;
+    }
+
+    public void setStade(String stade) {
+        this.stade = stade;
     }
 
     public String getUrlLogo() {
