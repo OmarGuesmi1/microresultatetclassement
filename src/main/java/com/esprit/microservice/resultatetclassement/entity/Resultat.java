@@ -19,6 +19,7 @@ public class Resultat {
     private int butsDomicile;
     private int butsExterieur;
     private VainqueurMatch vainqueur; // Enum : DOMICILE, EXTERIEUR, ÉGALITÉ
+    private StatutMatch statut; // PROGRAMMÉ, TERMINÉ, ANNULÉ
     private LocalDate date;
 
     // 🧱 Constructeur vide
@@ -26,7 +27,7 @@ public class Resultat {
 
     // 🧱 Constructeur avec tous les champs
     public Resultat(String id, String idMatch, String idCompetition, String idClubDomicile, String idClubExterieur,
-                    int butsDomicile, int butsExterieur, VainqueurMatch vainqueur, LocalDate date) {
+                    int butsDomicile, int butsExterieur, VainqueurMatch vainqueur, LocalDate date,StatutMatch statut) {
         this.id = id;
         this.idMatch = idMatch;
         this.idCompetition = idCompetition;
@@ -36,6 +37,7 @@ public class Resultat {
         this.butsExterieur = butsExterieur;
         this.vainqueur = vainqueur;
         this.date = date;
+        this.statut = statut;
     }
 
     // 🧩 Getters et Setters
@@ -109,5 +111,13 @@ public class Resultat {
 
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+
+    public StatutMatch getStatut() {
+        return statut;
+    }
+
+    public void setStatut(StatutMatch statut) {
+        this.statut = statut;
     }
 }
