@@ -3,6 +3,7 @@ package com.esprit.microservice.resultatetclassement.service;
 import com.esprit.microservice.resultatetclassement.entity.*;
 import com.esprit.microservice.resultatetclassement.repository.ClassementRepository;
 import com.esprit.microservice.resultatetclassement.repository.ClubRepository;
+import com.esprit.microservice.resultatetclassement.repository.MatchRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -15,50 +16,48 @@ import java.util.stream.Collectors;
 public class ClassementService {
 
     private final ClassementRepository classementRepo;
-    private final ResultatRepository resultatRepo;
+    private final MatchRepository matchRepo; // Use MatchRepository now
     private final ClubRepository clubRepo;
 
     public ClassementService(ClassementRepository classementRepo,
-                             ResultatRepository resultatRepo,
+                             MatchRepository matchRepo,
                              ClubRepository clubRepo) {
         this.classementRepo = classementRepo;
-        this.resultatRepo = resultatRepo;
+        this.matchRepo = matchRepo;
         this.clubRepo = clubRepo;
     }
 
-    // 🔄 Met à jour les classements dans la base à partir des matchs TERMINÉS
+    // 🔄 Update standings based on TERMINÉ matches
     public List<Classement> updateClassements(String idCompetition) {
-        List<Resultat> resultatsTermines = resultatRepo.findByIdCompetition(idCompetition).stream()
-                .filter(r -> r.getStatut() == StatutMatch.TERMINÉ)
+        List<Match> matchesTermines = matchRepo.findByIdCompetition(idCompetition).stream()
+                .filter(m -> m.getStatut() == StatutMatch.TERMINÉ)
                 .toList();
 
         Map<String, Classement> classements = initClassements(idCompetition);
 
-        // Calcul des statistiques
-        calculerStats(resultatsTermines, classements);
+        calculerStats(matchesTermines, classements);
 
-        // Supprimer anciens classements et sauvegarder les nouveaux
+        // Delete old standings and save new ones
         classementRepo.deleteAll(classementRepo.findByIdCompetition(idCompetition));
         classementRepo.saveAll(classements.values());
 
         return trierClassements(classements);
     }
 
-    // 📊 Lecture seule du classement basé sur les matchs TERMINÉS
+    // 📊 Read-only standings based on TERMINÉ matches
     public List<Classement> getClassement(String idCompetition) {
-        List<Resultat> resultatsTermines = resultatRepo.findByIdCompetition(idCompetition).stream()
-                .filter(r -> r.getStatut() == StatutMatch.TERMINÉ)
+        List<Match> matchesTermines = matchRepo.findByIdCompetition(idCompetition).stream()
+                .filter(m -> m.getStatut() == StatutMatch.TERMINÉ)
                 .toList();
 
         Map<String, Classement> classements = initClassements(idCompetition);
 
-        // Calcul des statistiques
-        calculerStats(resultatsTermines, classements);
+        calculerStats(matchesTermines, classements);
 
         return trierClassements(classements);
     }
 
-    // Initialiser tous les clubs pour la compétition
+    // Initialize all clubs for the competition
     private Map<String, Classement> initClassements(String idCompetition) {
         Map<String, String> clubIdToNom = clubRepo.findAll().stream()
                 .collect(Collectors.toMap(Club::getId, Club::getNom));
@@ -82,43 +81,43 @@ public class ClassementService {
         return classements;
     }
 
-    // Calculer les stats des clubs à partir des résultats
-    private void calculerStats(List<Resultat> resultats, Map<String, Classement> classements) {
-        for (Resultat r : resultats) {
-            Classement domicile = classements.get(r.getIdClubDomicile());
-            Classement exterieur = classements.get(r.getIdClubExterieur());
+    // Calculate club stats from matches
+    private void calculerStats(List<Match> matches, Map<String, Classement> classements) {
+        for (Match m : matches) {
+            Classement domicile = classements.get(m.getIdClubDomicile());
+            Classement exterieur = classements.get(m.getIdClubExterieur());
 
-            // Match joué
+            // Match played
             domicile.setMatchsJoues(domicile.getMatchsJoues() + 1);
             exterieur.setMatchsJoues(exterieur.getMatchsJoues() + 1);
 
-            // Buts
-            domicile.setButsPour(domicile.getButsPour() + r.getButsDomicile());
-            domicile.setButsContre(domicile.getButsContre() + r.getButsExterieur());
-            exterieur.setButsPour(exterieur.getButsPour() + r.getButsExterieur());
-            exterieur.setButsContre(exterieur.getButsContre() + r.getButsDomicile());
+            // Goals
+            domicile.setButsPour(domicile.getButsPour() + m.getButsDomicile());
+            domicile.setButsContre(domicile.getButsContre() + m.getButsExterieur());
+            exterieur.setButsPour(exterieur.getButsPour() + m.getButsExterieur());
+            exterieur.setButsContre(exterieur.getButsContre() + m.getButsDomicile());
 
-            // Résultat
-            if (r.getVainqueur() == VainqueurMatch.DOMICILE) {
+            // Match result
+            if (m.getVainqueur() == VainqueurMatch.DOMICILE) {
                 domicile.setVictoires(domicile.getVictoires() + 1);
                 exterieur.setDefaites(exterieur.getDefaites() + 1);
-            } else if (r.getVainqueur() == VainqueurMatch.EXTERIEUR) {
+            } else if (m.getVainqueur() == VainqueurMatch.EXTERIEUR) {
                 exterieur.setVictoires(exterieur.getVictoires() + 1);
                 domicile.setDefaites(domicile.getDefaites() + 1);
-            } else if (r.getVainqueur() == VainqueurMatch.ÉGALITÉ) {
+            } else if (m.getVainqueur() == VainqueurMatch.ÉGALITÉ) {
                 domicile.setNuls(domicile.getNuls() + 1);
                 exterieur.setNuls(exterieur.getNuls() + 1);
             }
         }
 
-        // Points et différence de buts
+        // Points and goal difference
         classements.values().forEach(c -> {
             c.setDifferenceButs(c.getButsPour() - c.getButsContre());
             c.setPoints(c.getVictoires() * 3 + c.getNuls());
         });
     }
 
-    // Trier les clubs selon points, différence de buts, buts pour et nom
+    // Sort clubs by points, goal difference, goals for, and name
     private List<Classement> trierClassements(Map<String, Classement> classements) {
         return classements.values().stream()
                 .sorted(Comparator.comparingInt(Classement::getPoints).reversed()
