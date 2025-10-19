@@ -24,14 +24,16 @@ public class Match {
     private String stade;
     private boolean domicile;
 
+    // ❌ Ce champ sera utilisé uniquement pour certaines compétitions
+    private TourMatch tour;
+
     // 🧱 Constructeurs
-    public Match() {
-    }
+    public Match() {}
 
     public Match(String id, String idCompetition, String idClubDomicile, String idClubExterieur,
                  int butsDomicile, int butsExterieur, LocalDate dateMatch,
                  StatutMatch statut, VainqueurMatch vainqueur,
-                 String stade, boolean domicile) {
+                 String stade, boolean domicile, TourMatch tour) {
         this.id = id;
         this.idCompetition = idCompetition;
         this.idClubDomicile = idClubDomicile;
@@ -43,6 +45,9 @@ public class Match {
         this.vainqueur = vainqueur;
         this.stade = stade;
         this.domicile = domicile;
+
+        // ⚡ On ne remplit tour que si c’est une compétition type Ligue des Champions
+        this.tour = tour;
     }
 
     // 🧩 Getters & Setters
@@ -132,5 +137,13 @@ public class Match {
 
     public void setDomicile(boolean domicile) {
         this.domicile = domicile;
+    }
+
+    public TourMatch getTour() {
+        return tour;
+    }
+
+    public void setTour(TourMatch tour) {
+        this.tour = tour;
     }
 }
