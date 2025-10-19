@@ -20,7 +20,7 @@ public class ClassementController {
     // Récupérer les classements d'une compétition
     @GetMapping("/{idCompetition}")
     public List<Classement> getClassements(@PathVariable String idCompetition) {
-        return service.getClassements(idCompetition);
+        return service.getClassement(idCompetition);
     }
 
     // Mettre à jour les classements d'une compétition
