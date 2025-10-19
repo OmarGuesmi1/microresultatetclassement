@@ -1,5 +1,6 @@
 package com.esprit.microservice.resultatetclassement.controlleur;
 
+import com.esprit.microservice.resultatetclassement.dto.MatchResultDTO;
 import com.esprit.microservice.resultatetclassement.entity.Match;
 import com.esprit.microservice.resultatetclassement.service.MatchService;
 import org.springframework.web.bind.annotation.*;
@@ -52,4 +53,10 @@ public class MatchController {
     public void supprimer(@PathVariable String id) {
         service.delete(id);
     }
+
+    @PutMapping("/{id}/result")
+    public Match updateResult(@PathVariable String id, @RequestBody MatchResultDTO dto) {
+        return service.updateResult(id, dto);
+    }
+
 }
