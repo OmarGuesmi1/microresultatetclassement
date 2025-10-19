@@ -3,7 +3,6 @@ package com.esprit.microservice.resultatetclassement.service;
 import com.esprit.microservice.resultatetclassement.entity.*;
 import com.esprit.microservice.resultatetclassement.repository.ClassementRepository;
 import com.esprit.microservice.resultatetclassement.repository.ClubRepository;
-import com.esprit.microservice.resultatetclassement.repository.ResultatRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
