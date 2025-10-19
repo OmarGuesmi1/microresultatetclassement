@@ -19,6 +19,7 @@ public class Match {
     private LocalDate dateMatch;
 
     private StatutMatch statut; // PROGRAMMÉ, TERMINÉ, ANNULÉ
+    private VainqueurMatch vainqueur; // DOMICILE, EXTERIEUR, ÉGALITÉ
 
     private String stade;
     private boolean domicile;
@@ -29,7 +30,8 @@ public class Match {
 
     public Match(String id, String idCompetition, String idClubDomicile, String idClubExterieur,
                  int butsDomicile, int butsExterieur, LocalDate dateMatch,
-                 StatutMatch statut, String stade, boolean domicile) {
+                 StatutMatch statut, VainqueurMatch vainqueur,
+                 String stade, boolean domicile) {
         this.id = id;
         this.idCompetition = idCompetition;
         this.idClubDomicile = idClubDomicile;
@@ -38,6 +40,7 @@ public class Match {
         this.butsExterieur = butsExterieur;
         this.dateMatch = dateMatch;
         this.statut = statut;
+        this.vainqueur = vainqueur;
         this.stade = stade;
         this.domicile = domicile;
     }
@@ -105,6 +108,14 @@ public class Match {
 
     public void setStatut(StatutMatch statut) {
         this.statut = statut;
+    }
+
+    public VainqueurMatch getVainqueur() {
+        return vainqueur;
+    }
+
+    public void setVainqueur(VainqueurMatch vainqueur) {
+        this.vainqueur = vainqueur;
     }
 
     public String getStade() {
