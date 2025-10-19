@@ -6,17 +6,14 @@ import com.esprit.microservice.resultatetclassement.repository.ClubRepository;
 import com.esprit.microservice.resultatetclassement.repository.MatchRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class ClassementService {
 
     private final ClassementRepository classementRepo;
-    private final MatchRepository matchRepo; // Use MatchRepository now
+    private final MatchRepository matchRepo;
     private final ClubRepository clubRepo;
 
     public ClassementService(ClassementRepository classementRepo,
@@ -31,9 +28,9 @@ public class ClassementService {
     public List<Classement> updateClassements(String idCompetition) {
         List<Match> matchesTermines = matchRepo.findByIdCompetition(idCompetition).stream()
                 .filter(m -> m.getStatut() == StatutMatch.TERMINÉ)
-                .toList();
+                .collect(Collectors.toList());
 
-        Map<String, Classement> classements = initClassements(idCompetition);
+        Map<String, Classement> classements = initClassements(matchesTermines, idCompetition);
 
         calculerStats(matchesTermines, classements);
 
@@ -48,19 +45,24 @@ public class ClassementService {
     public List<Classement> getClassement(String idCompetition) {
         List<Match> matchesTermines = matchRepo.findByIdCompetition(idCompetition).stream()
                 .filter(m -> m.getStatut() == StatutMatch.TERMINÉ)
-                .toList();
+                .collect(Collectors.toList());
 
-        Map<String, Classement> classements = initClassements(idCompetition);
+        Map<String, Classement> classements = initClassements(matchesTermines, idCompetition);
 
         calculerStats(matchesTermines, classements);
 
         return trierClassements(classements);
     }
 
-    // Initialize all clubs for the competition
-    private Map<String, Classement> initClassements(String idCompetition) {
-        Map<String, String> clubIdToNom = clubRepo.findAll().stream()
-                .collect(Collectors.toMap(Club::getId, Club::getNom));
+    // Initialize only clubs that played in this competition
+    private Map<String, Classement> initClassements(List<Match> matches, String idCompetition) {
+        Map<String, String> clubIdToNom = new HashMap<>();
+
+        // Extract only clubs that appear in the matches
+        for (Match m : matches) {
+            clubIdToNom.putIfAbsent(m.getIdClubDomicile(), clubRepo.findById(m.getIdClubDomicile()).map(Club::getNom).orElse("Unknown"));
+            clubIdToNom.putIfAbsent(m.getIdClubExterieur(), clubRepo.findById(m.getIdClubExterieur()).map(Club::getNom).orElse("Unknown"));
+        }
 
         Map<String, Classement> classements = new HashMap<>();
         for (Map.Entry<String, String> entry : clubIdToNom.entrySet()) {
@@ -86,6 +88,8 @@ public class ClassementService {
         for (Match m : matches) {
             Classement domicile = classements.get(m.getIdClubDomicile());
             Classement exterieur = classements.get(m.getIdClubExterieur());
+
+            if (domicile == null || exterieur == null) continue;
 
             // Match played
             domicile.setMatchsJoues(domicile.getMatchsJoues() + 1);
