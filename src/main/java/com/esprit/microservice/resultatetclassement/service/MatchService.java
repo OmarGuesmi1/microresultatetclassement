@@ -1,5 +1,6 @@
 package com.esprit.microservice.resultatetclassement.service;
 
+import com.esprit.microservice.resultatetclassement.dto.MatchResultDTO;
 import com.esprit.microservice.resultatetclassement.entity.Match;
 import com.esprit.microservice.resultatetclassement.repository.MatchRepository;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,17 @@ public class MatchService {
         return repo.save(m);
     }
 
+    public Match updateResult(String id, MatchResultDTO dto) {
+        Match match = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Match not found with id: " + id));
+
+        match.setButsDomicile(dto.getButsDomicile());
+        match.setButsExterieur(dto.getButsExterieur());
+        match.setStatut(dto.getStatut());
+        match.setVainqueur(dto.getVainqueur());
+
+        return repo.save(match);
+    }
     public void delete(String id) {
         repo.deleteById(id);
     }
