@@ -24,41 +24,97 @@ public class ClassementService {
         this.clubRepo = clubRepo;
     }
 
-    // 🔄 Update standings based on TERMINÉ matches
-    public List<Classement> updateClassements(String idCompetition) {
+    /**
+     * Main entry point to update standings or knockout results
+     */
+    public List<Classement> updateClassements(String idCompetition, TypeCompetition typeCompetition) {
+
         List<Match> matchesTermines = matchRepo.findByIdCompetition(idCompetition).stream()
                 .filter(m -> m.getStatut() == StatutMatch.TERMINÉ)
                 .collect(Collectors.toList());
 
-        Map<String, Classement> classements = initClassements(matchesTermines, idCompetition);
+        if (typeCompetition == TypeCompetition.LIGUE || typeCompetition == TypeCompetition.TOURNOI_AMICAL) {
+            // League or friendly: compute full standings
+            Map<String, Classement> classements = initClassements(matchesTermines, idCompetition);
+            calculerStats(matchesTermines, classements);
+            classementRepo.deleteAll(classementRepo.findByIdCompetition(idCompetition));
+            classementRepo.saveAll(classements.values());
+            return trierClassements(classements);
+        } else if (typeCompetition == TypeCompetition.LIGUE_DES_CHAMPIONS
+                || typeCompetition == TypeCompetition.EUROPA_LEAGUE) {
+            // Champions League / Europa League
+            // Separate group stage and knockout stage
+            Map<TourMatch, List<Match>> matchesByTour = matchesTermines.stream()
+                    .filter(m -> m.getTour() != null)
+                    .collect(Collectors.groupingBy(Match::getTour, LinkedHashMap::new, Collectors.toList()));
 
-        calculerStats(matchesTermines, classements);
+            List<Classement> result = new ArrayList<>();
 
-        // Delete old standings and save new ones
-        classementRepo.deleteAll(classementRepo.findByIdCompetition(idCompetition));
-        classementRepo.saveAll(classements.values());
+            // Group stage: compute standings
+            if (matchesByTour.containsKey(TourMatch.GROUPES)) {
+                List<Match> groupMatches = matchesByTour.get(TourMatch.GROUPES);
+                Map<String, Classement> groupClassements = initClassements(groupMatches, idCompetition);
+                calculerStats(groupMatches, groupClassements);
+                result.addAll(trierClassements(groupClassements));
+            }
 
-        return trierClassements(classements);
+            // Knockout stages: just store match results per round
+            for (TourMatch tour : TourMatch.values()) {
+                if (tour != TourMatch.GROUPES && matchesByTour.containsKey(tour)) {
+                    for (Match m : matchesByTour.get(tour)) {
+                        Classement c = new Classement();
+                        c.setIdCompetition(idCompetition);
+                        c.setIdClub(m.getIdClubDomicile());
+                        c.setNomClub(clubRepo.findById(m.getIdClubDomicile()).map(Club::getNom).orElse("Unknown"));
+                        c.setMatchsJoues(1);
+                        if (m.getVainqueur() == VainqueurMatch.DOMICILE) c.setVictoires(1);
+                        if (m.getVainqueur() == VainqueurMatch.EXTERIEUR) c.setDefaites(1);
+                        if (m.getVainqueur() == VainqueurMatch.ÉGALITÉ) c.setNuls(1);
+                        result.add(c);
+                    }
+                }
+            }
+            classementRepo.deleteAll(classementRepo.findByIdCompetition(idCompetition));
+            classementRepo.saveAll(result);
+            return result;
+
+        } else if (typeCompetition == TypeCompetition.COUPE_NATIONALE || typeCompetition == TypeCompetition.COUPE_DU_MONDE) {
+            // Knockout cup competitions: just store match results per round
+            Map<TourMatch, List<Match>> matchesByTour = matchesTermines.stream()
+                    .filter(m -> m.getTour() != null)
+                    .collect(Collectors.groupingBy(Match::getTour, LinkedHashMap::new, Collectors.toList()));
+
+            List<Classement> result = new ArrayList<>();
+            for (TourMatch tour : matchesByTour.keySet()) {
+                for (Match m : matchesByTour.get(tour)) {
+                    Classement c = new Classement();
+                    c.setIdCompetition(idCompetition);
+                    c.setIdClub(m.getIdClubDomicile());
+                    c.setNomClub(clubRepo.findById(m.getIdClubDomicile()).map(Club::getNom).orElse("Unknown"));
+                    c.setMatchsJoues(1);
+                    if (m.getVainqueur() == VainqueurMatch.DOMICILE) c.setVictoires(1);
+                    if (m.getVainqueur() == VainqueurMatch.EXTERIEUR) c.setDefaites(1);
+                    if (m.getVainqueur() == VainqueurMatch.ÉGALITÉ) c.setNuls(1);
+                    result.add(c);
+                }
+            }
+            classementRepo.deleteAll(classementRepo.findByIdCompetition(idCompetition));
+            classementRepo.saveAll(result);
+            return result;
+        }
+
+        return Collections.emptyList();
     }
 
-    // 📊 Read-only standings based on TERMINÉ matches
-    public List<Classement> getClassement(String idCompetition) {
-        List<Match> matchesTermines = matchRepo.findByIdCompetition(idCompetition).stream()
-                .filter(m -> m.getStatut() == StatutMatch.TERMINÉ)
-                .collect(Collectors.toList());
-
-        Map<String, Classement> classements = initClassements(matchesTermines, idCompetition);
-
-        calculerStats(matchesTermines, classements);
-
-        return trierClassements(classements);
+    // Get standings without saving
+    public List<Classement> getClassement(String idCompetition, TypeCompetition typeCompetition) {
+        return updateClassements(idCompetition, typeCompetition);
     }
 
     // Initialize only clubs that played in this competition
     private Map<String, Classement> initClassements(List<Match> matches, String idCompetition) {
         Map<String, String> clubIdToNom = new HashMap<>();
 
-        // Extract only clubs that appear in the matches
         for (Match m : matches) {
             clubIdToNom.putIfAbsent(m.getIdClubDomicile(), clubRepo.findById(m.getIdClubDomicile()).map(Club::getNom).orElse("Unknown"));
             clubIdToNom.putIfAbsent(m.getIdClubExterieur(), clubRepo.findById(m.getIdClubExterieur()).map(Club::getNom).orElse("Unknown"));
@@ -83,7 +139,7 @@ public class ClassementService {
         return classements;
     }
 
-    // Calculate club stats from matches
+    // Calculate league/group stats
     private void calculerStats(List<Match> matches, Map<String, Classement> classements) {
         for (Match m : matches) {
             Classement domicile = classements.get(m.getIdClubDomicile());
@@ -91,17 +147,14 @@ public class ClassementService {
 
             if (domicile == null || exterieur == null) continue;
 
-            // Match played
             domicile.setMatchsJoues(domicile.getMatchsJoues() + 1);
             exterieur.setMatchsJoues(exterieur.getMatchsJoues() + 1);
 
-            // Goals
             domicile.setButsPour(domicile.getButsPour() + m.getButsDomicile());
             domicile.setButsContre(domicile.getButsContre() + m.getButsExterieur());
             exterieur.setButsPour(exterieur.getButsPour() + m.getButsExterieur());
             exterieur.setButsContre(exterieur.getButsContre() + m.getButsDomicile());
 
-            // Match result
             if (m.getVainqueur() == VainqueurMatch.DOMICILE) {
                 domicile.setVictoires(domicile.getVictoires() + 1);
                 exterieur.setDefaites(exterieur.getDefaites() + 1);
@@ -114,14 +167,13 @@ public class ClassementService {
             }
         }
 
-        // Points and goal difference
         classements.values().forEach(c -> {
             c.setDifferenceButs(c.getButsPour() - c.getButsContre());
             c.setPoints(c.getVictoires() * 3 + c.getNuls());
         });
     }
 
-    // Sort clubs by points, goal difference, goals for, and name
+    // Sort by points, goal difference, goals for, name
     private List<Classement> trierClassements(Map<String, Classement> classements) {
         return classements.values().stream()
                 .sorted(Comparator.comparingInt(Classement::getPoints).reversed()
