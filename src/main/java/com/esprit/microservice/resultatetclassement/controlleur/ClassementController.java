@@ -1,6 +1,7 @@
 package com.esprit.microservice.resultatetclassement.controlleur;
 
 import com.esprit.microservice.resultatetclassement.entity.Classement;
+import com.esprit.microservice.resultatetclassement.entity.TypeCompetition;
 import com.esprit.microservice.resultatetclassement.service.ClassementService;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,14 +19,20 @@ public class ClassementController {
     }
 
     // Récupérer les classements d'une compétition
-    @GetMapping("/{idCompetition}")
-    public List<Classement> getClassements(@PathVariable String idCompetition) {
-        return service.getClassement(idCompetition);
+    @GetMapping("/{idCompetition}/{typeCompetition}")
+    public List<Classement> getClassements(
+            @PathVariable String idCompetition,
+            @PathVariable TypeCompetition typeCompetition) {
+        return service.getClassement(idCompetition, typeCompetition);
     }
 
-    // Mettre à jour les classements d'une compétition
-    @PostMapping("/mise-a-jour/{idCompetition}")
-    public List<Classement> updateClassements(@PathVariable String idCompetition) {
-        return service.updateClassements(idCompetition);
+
+    @PostMapping("/mise-a-jour/{idCompetition}/{typeCompetition}")
+    public List<Classement> updateClassements(
+            @PathVariable String idCompetition,
+            @PathVariable TypeCompetition typeCompetition) {
+        return service.updateClassements(idCompetition, typeCompetition);
     }
+
+
 }
