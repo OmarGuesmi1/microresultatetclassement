@@ -1,7 +1,6 @@
 package com.esprit.microservice.resultatetclassement.controlleur;
 
 import com.esprit.microservice.resultatetclassement.service.ClassementService;
-import com.esprit.microservice.resultatetclassement.service.ResultatService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
