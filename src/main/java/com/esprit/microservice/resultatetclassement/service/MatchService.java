@@ -1,5 +1,6 @@
 package com.esprit.microservice.resultatetclassement.service;
 
+import com.esprit.microservice.resultatetclassement.Iservice.IMatchService;
 import com.esprit.microservice.resultatetclassement.dto.MatchResultDTO;
 import com.esprit.microservice.resultatetclassement.entity.Match;
 import com.esprit.microservice.resultatetclassement.repository.MatchRepository;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class MatchService {
+public class MatchService implements IMatchService {
 
     private final MatchRepository repo;
 
