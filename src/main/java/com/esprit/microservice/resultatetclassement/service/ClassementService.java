@@ -1,5 +1,6 @@
 package com.esprit.microservice.resultatetclassement.service;
 
+import com.esprit.microservice.resultatetclassement.Iservice.IClassementService;
 import com.esprit.microservice.resultatetclassement.entity.*;
 import com.esprit.microservice.resultatetclassement.repository.ClassementRepository;
 import com.esprit.microservice.resultatetclassement.repository.ClubRepository;
@@ -10,7 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class ClassementService {
+public class ClassementService implements IClassementService {
 
     private final ClassementRepository classementRepo;
     private final MatchRepository matchRepo;
