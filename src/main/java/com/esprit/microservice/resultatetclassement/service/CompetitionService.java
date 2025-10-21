@@ -1,5 +1,6 @@
 package com.esprit.microservice.resultatetclassement.service;
 
+import com.esprit.microservice.resultatetclassement.Iservice.ICompetitionService;
 import com.esprit.microservice.resultatetclassement.entity.Competition;
 import com.esprit.microservice.resultatetclassement.repository.CompetitionRepository;
 import org.springframework.stereotype.Service;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CompetitionService {
+public class CompetitionService implements ICompetitionService {
 
     private final CompetitionRepository repo;
 
